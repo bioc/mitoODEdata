@@ -1,0 +1,130 @@
+%\VignetteIndexEntry{Mitoode data}
+%\VignetteKeywords{ExperimentData, siRNAData}
+%\VignettePackage{mitoODEdata}
+
+\documentclass[10pt,a4paper]{article}
+
+\RequirePackage{amsfonts,amsmath,amstext,amssymb,amscd}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.2,0.0,0.4}
+
+\usepackage[a4paper,left=2.2cm,top=2.2cm,bottom=2.8cm,right=2.2cm,ignoreheadfoot]{geometry}
+
+\newcommand{\lib}[1]{{\mbox{\normalfont\textsf{#1}}}}
+\newcommand{\file}[1]{{\mbox{\normalfont\textsf{'#1'}}}}
+\newcommand{\R}{{\mbox{\normalfont\textsf{R}}}}
+\newcommand{\Rfunction}[1]{{\mbox{\normalfont\texttt{#1}}}}
+\newcommand{\Robject}[1]{{\mbox{\normalfont\texttt{#1}}}}
+\newcommand{\Rpackage}[1]{{\mbox{\normalfont\textsf{#1}}}}
+\newcommand{\Rclass}[1]{{\mbox{\normalfont\textit{#1}}}}
+\newcommand{\code}[1]{{\mbox{\normalfont\texttt{#1}}}}
+
+\newcommand{\email}[1]{\mbox{\href{mailto:#1}{\textcolor{darkblue}{\normalfont{#1}}}}}
+\newcommand{\web}[2]{\mbox{\href{#2}{\textcolor{darkblue}{\normalfont{#1}}}}}
+
+%\usepackage[pdftitle={{mitoODEdata: Dynamical modelling of phenotypes in a genome-wide RNAi live-cell imaging assay},pdfauthor={Gregoire Pau},pdfsubject={mitoODEdata},pdfkeywords={image processing},pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+
+\SweaveOpts{keep.source=TRUE,eps=FALSE}
+
+\begin{document}
+
+\title{mitoODEdata: Dynamical modelling of phenotypes in a genome-wide RNAi live-cell imaging assay}
+\author{Gregoire Pau\\\email{pau.gregoire@gene.com}}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+The Mitocheck screen \cite{mitocheck} is a time-lapse imaging assay that employed
+small-interfering RNAs (siRNAs) to test
+the implication of human genes in transient biological processes such as cell division or
+migration genome-wide. In this experiment, HeLa cells stably expressing
+core histone 2B tagged with green fluorescent protein (GFP) were seeded on siRNA-spotted
+slides, incubated for 18 h and imaged with automated fluorescence microscopy for
+48~h. Video sequences of cell populations on each siRNA-spot were analysed by image
+segmentation, and at each frame, each individual cell was categorised into one of 16
+morphological classes mostly related to cell division.
+
+The \code{mitoODE} package implements a modelling by
+differential equations of cellular populations \cite{mitoODE}, to quantify the
+phenotypic effect induced by siRNA treatments in the Mitocheck
+screen. The package includes the code to fit any time course data to
+the model and the scripts used to generate the figures and results
+presented in the paper.
+
+The \code{mitoODEdata} package, the experimental companion package of
+\code{mitoODE}, contains the screen data and methods to
+access the Mitocheck assay layout, siRNA annotation, time-lapse cell
+counts and the fitted phenotypes for each spot. Four cell types are reported: interphase (referred in the
+Mitocheck paper as: Interphase, Large, Elongated, Folded, Hole,
+SmallIrregular or UndefinedCondensed), mitotic (Metaphase, Anaphase,
+MetaphaseAlignment, Prometaphase or ADCCM), polynucleated (Shape1,
+Shape3, Grape) and apoptotic (Apoptosis).
+
+\section{Data access}
+Loading the package \code{mitoODEdata} loads the Mitocheck screen
+annotation variables \code{tab} and \code{anno} in the global environment.
+The object \code{tab} is a data frame containing spot metadata, including: 
+\code{plate} (plate number), \code{replicate} (replicate
+number), \code{spot} (spot number within the plate), \code{qc}
+(original quality control from the paper), \code{type} (spot type) and
+\code{sirna} (spot siRNA ID). The object \code{anno} is a data frame
+containing the siRNA to gene mapping, including: \code{sirna} (siRNA
+ID), \code{ensembl} (target Ensembl gene ID), \code{hgnc} (target HGNC
+gene symbol), \code{entrez} (target Entrez gene ID), \code{genename}
+(target HGNC gene name).
+
+<<lib>>=
+library("mitoODEdata")
+tab[1:5,]
+anno[1:5,]
+@
+
+The functions \code{getspot}, \code{getsirna} and \code{getanno} allow
+simple conversions between HGNC gene symbols, Mitocheck siRNAs and
+spot IDs.
+
+<<getspot>>=
+getsirna(ann="CDH1")
+getspot(ann="FGFR2")
+getanno(spot=1234, field=c("hgnc", "entrez", "genename"))
+@
+
+The function \code{readspot} reads the time-course cell counts of a
+given spot ID. The output value is a matrix containing the number of
+cells of a given type (interphase \code{i}, mitotic \code{m}, polynucleated \code{s} and
+apoptotic \code{a}) per frame. The first image (e.g. row) was acquired 18 h after
+siRNA transfection and the following images were acquired every 30
+minutes during 48 h.  The function \code{plotspot} plots the cell count time series of a given spot ID.
+
+<<fig1plo, fig=TRUE>>=
+spotid <- getspot(ann="FGFR2")[1]
+y <- readspot(spotid)
+y[1:10,]
+plotspot(spotid)
+@
+
+\section{References}
+\begin{thebibliography}{9}
+  
+\bibitem{mitoODE}
+Pau G, Walter T, Neumann B,  Heriche JK, Ellenberg J, and Huber W (2013)
+{{D}ynamical modelling of phenotypes in a genome-wide RNAi
+  live-cell imaging assay}.
+\newblock (submitted)
+  
+\bibitem{mitocheck}
+Neumann B, Walter T, Heriche JK, Bulkescher J, Erfle H, et~al. (2010)
+  {{P}henotypic profiling of the human genome by time-lapse microscopy reveals
+  cell division genes}.
+\newblock Nature 464: 721--727.
+
+\end{thebibliography}
+
+\end{document}
+
+

@@ -1,0 +1,2 @@
+export(readspot, plotspot)
+export(getanno, getspot, getsirna)
