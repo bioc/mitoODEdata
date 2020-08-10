@@ -1,2 +1,4 @@
 export(readspot, plotspot)
 export(getanno, getspot, getsirna)
+importFrom("graphics", "matplot")
+importFrom("methods", "is")

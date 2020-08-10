@@ -14,13 +14,6 @@ loadMitocheck <- function() {
   }
 }
 
-loadPheno <- function() {
-  if (!exists("pheno")) {
-    tab <- get(load(system.file("data/pheno.rda", package="mitoODEdata")))
-    assign("pheno", pheno, 1)
-  }
-}
-
 readspot <- function(spot) {
   loadMitocheck()
   prs <- c(plate=tab$plate[spot], replicate=tab$replicate[spot],
@@ -62,7 +55,7 @@ plotspot <- function(spot) {
 
   ## plot spot
   y <- try(readspot(spot), silent=TRUE)
-  if (class(y)=='try-error') cat('warning: cannot read spot=', spot, '\n')
+  if (is(y, 'try-error')) cat('warning: cannot read spot=', spot, '\n')
   else {
     nt <- nrow(y)
     vt <- seq(g.tstart, len=nt, by=0.5)
